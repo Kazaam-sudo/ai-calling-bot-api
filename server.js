@@ -38,6 +38,17 @@ app.post('/webhook/ai-calling/bot', async (req, reply) => {
 
 app.get('/health', async () => ({ ok: true }))
 
+app.post('/admin/prompt', async (req, reply) => {
+  const { id, text } = req.body || {}
+
+  if (!id || !text) {
+    return reply.code(400).send({ error: 'id and text required' })
+  }
+
+  await redis.set(`prompt:system:${id}`, text)
+  return { ok: true }
+})
+
 app.listen({
   port: process.env.PORT || 3000,
   host: '0.0.0.0'
