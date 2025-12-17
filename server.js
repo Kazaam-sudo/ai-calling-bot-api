@@ -25,15 +25,20 @@ app.post('/webhook/ai-calling/bot', async (req, reply) => {
     await redis.expire(`${base}:history`, 86400)
   }
 
-  const prompt = await redis.get(`prompt:system:${context_id}`)
+ const prompt = await redis.get(`prompt:system:${context_id}`)
+const history = await redis.lrange(`${base}:history`, 0, 2)
 
-  return {
-    reply_text: prompt
-      ? 'Принял, секунду…'
-      : 'Здравствуйте! Чем могу помочь?',
-    end_call: false,
-    meta: { latency_ms: Date.now() - started }
-  }
+let replyText = 'Здравствуйте! Чем могу помочь?'
+
+if (history.length > 1) {
+  replyText = `Вы сказали: ${client_transcript}`
+}
+
+return {
+  reply_text: replyText,
+  end_call: false,
+  meta: { latency_ms: Date.now() - started }
+}
 })
 
 app.get('/health', async () => ({ ok: true }))
